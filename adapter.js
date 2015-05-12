@@ -3,7 +3,7 @@ var extend = require('xtend');
 var RPC = require('rpc-stream');
 var binUtil = require('pouchdb-binary-util');
 var uuid = require('node-uuid').v4;
-var log = require('debug')('pouchdb:remote-stream:adapter');
+var log = require('debug')('pouch-remote-stream:adapter');
 var clientMethods = require('./client-methods');
 
 var defaultArguments = {};
@@ -11,6 +11,7 @@ var defaultArguments = {};
 module.exports = RemoteStream;
 
 function RemoteStream(opts, callback) {
+  debug('adapter constructor called', opts);
   var api = this;
 
   if (typeof opts === 'string') {
@@ -39,6 +40,7 @@ function RemoteStream(opts, callback) {
     return callback(new Error(optsErrMessage));
   }
 
+  debug('going to create remote stream');
   var remoteStream = remote.createStream(opts);
 
   var server = RPC();
@@ -316,3 +318,10 @@ var pouchExtend = require('pouchdb-extend');
 function clone(obj) {
   return pouchExtend.extend(true, {}, obj);
 };
+
+/* istanbul ignore next */
+if (typeof window !== 'undefined' && window.PouchDB) {
+  window.PouchDB.adapter('remote', module.exports);
+}
+
+log('defined adapter');

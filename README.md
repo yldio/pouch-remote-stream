@@ -1,10 +1,17 @@
 # pouch-remote-stream
 
+## Install
+
+```
+$ npm install pouch-remote-stream
+```
+
+## Use
 
 ```js
 var PouchDB = require('pouchdb');
 var PouchRemoteStream = require('pouch-remote-stream');
-PouchDB.adapter('remote', PouchRemoteStream.adapter;
+PouchDB.adapter('remote', PouchRemoteStream.adapter);
 
 var stream = require('websocket-stream')('ws://yourserver.com');
 var remote = PouchRemoteStream();
@@ -16,3 +23,12 @@ var remoteDB = new PouchDB({
   remote: remote 
 });
 ```
+
+## Debug
+
+Enable debug output by setting environment variable `DEBUG` to `pouch-remote-stream:*`.
+
+
+# License
+
+ISC
