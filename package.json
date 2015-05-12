@@ -1,0 +1,31 @@
+{
+  "name": "pouch-remote-stream",
+  "version": "0.0.1",
+  "description": "Remote Stream for PouchDB",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pgte/pouch-remote-stream.git"
+  },
+  "author": "pgte",
+  "license": "ISC",
+  "dependencies": {
+    "async-each": "^0.1.6",
+    "debug": "^2.2.0",
+    "inherits": "^2.0.1",
+    "mux-demux": "^3.7.9",
+    "node-uuid": "^1.4.3",
+    "pouchdb-binary-util": "^1.0.1",
+    "pouchdb-extend": "^0.1.2",
+    "rpc-stream": "^2.1.1",
+    "xtend": "^4.0.0"
+  },
+  "devDependencies": {
+    "mkdirp": "^0.5.0",
+    "mocha": "^2.2.4",
+    "pouchdb": "^3.5.0"
+  }
+}

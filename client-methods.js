@@ -1,0 +1,20 @@
+module.exports = [
+  'id',
+  'compact',
+  'info',
+  'get',
+  'remove',
+  'getAttachment',
+  'removeAttachment',
+  'putAttachment',
+  'put',
+  'post',
+  'bulkDocs',
+  'allDocs',
+  'changes',
+  'liveChanges',
+  'revsDiff',
+  'query',
+  'viewCleanup',
+  'destroy'
+];
