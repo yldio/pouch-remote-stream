@@ -1,5 +1,9 @@
 # pouch-remote-stream
 
+PouchDB remote streams, client and server.
+
+Heavily based on [nolanlawson/socket-pouch](https://github.com/nolanlawson/socket-pouch).
+
 ## Install
 
 ```
