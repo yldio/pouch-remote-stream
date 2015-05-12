@@ -21,7 +21,7 @@ PouchDB.adapter('remote', PouchRemoteStream.adapter);
 
 var stream = require('net').connect(port, host);
 var remote = PouchRemoteStream();
-stream.pipe(remote, {end: false}).pipe(stream);
+stream.pipe(remote).pipe(stream);
 
 var remoteDB = new PouchDB({
   adapter: 'remote',
