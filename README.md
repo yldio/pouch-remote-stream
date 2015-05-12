@@ -26,8 +26,18 @@ var remoteDB = new PouchDB({
 
 ## Debug
 
+### Node
+
 Enable debug output by setting environment variable `DEBUG` to `pouch-remote-stream:*`.
 
+
+### Browser
+
+In the browser, you can enable debugging by using PouchDB's logger:
+
+```js
+PouchDB.debug.enable('pouchdb:socket:*');
+```
 
 # License
 
