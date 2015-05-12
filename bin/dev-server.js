@@ -1,23 +1,15 @@
 var net = require('net');
-var MuxDemux = require('mux-demux');
-var server = net.createServer(function(conn) {
-  console.log('new connection');
-  conn.on('data', function(d) {
-    console.log('<-', d);
-  });
-  var m = MuxDemux(handleStream);
-  conn.pipe(m).pipe(conn);
-});
+var PouchRemoteStream = require('../server');
+var log = require('debug')('pouchdb:remotestream:devserver');
 
-function handleStream(stream) {
-  console.log('-> NEW STREAM %s', stream.meta);
-  stream.on('data', function(d) {
-    console.log('-> (%s) %j', stream.meta, d);
+var server = net.createServer(function(conn) {
+  conn.setEncoding('utf8');
+  conn.on('data', function(d) {
+    log('raw data from client', d);
   });
-  stream.once('end', function(d) {
-    console.log('-> (%s) ENDED', stream.meta);
-  });
-}
+
+  conn.pipe(PouchRemoteStream()).pipe(conn);
+});
 
 server.listen(3004, function() {
   console.log('dev server listening on %j', server.address());

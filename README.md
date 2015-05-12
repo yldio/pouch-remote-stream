@@ -8,12 +8,14 @@ $ npm install pouch-remote-stream
 
 ## Use
 
+### Client
+
 ```js
 var PouchDB = require('pouchdb');
 var PouchRemoteStream = require('pouch-remote-stream');
 PouchDB.adapter('remote', PouchRemoteStream.adapter);
 
-var stream = require('websocket-stream')('ws://yourserver.com');
+var stream = require('net').connect(port, host);
 var remote = PouchRemoteStream();
 stream.pipe(remote, {end: false}).pipe(stream);
 
@@ -24,11 +26,22 @@ var remoteDB = new PouchDB({
 });
 ```
 
+### Server
+
+```js
+var PouchRemoteStream = require('pouch-remote-stream/server');
+
+var server = require('net').createServer(function(conn) {
+  conn.pipe(PouchRemoteStream()).pipe(conn);
+});
+```
+
+
 ## Debug
 
 ### Node
 
-Enable debug output by setting environment variable `DEBUG` to `pouch-remote-stream:*`.
+Enable debug output by setting environment variable `DEBUG` to `pouchdb:remotestream:*`.
 
 
 ### Browser
@@ -36,7 +49,7 @@ Enable debug output by setting environment variable `DEBUG` to `pouch-remote-str
 In the browser, you can enable debugging by using PouchDB's logger:
 
 ```js
-PouchDB.debug.enable('pouchdb:socket:*');
+PouchDB.debug.enable('pouchdb:remotestream:*');
 ```
 
 # License

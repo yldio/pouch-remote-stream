@@ -1,6 +1,6 @@
 #!/bin/bash
 
-: ${TIMEOUT:=50000}
+: ${TIMEOUT:=5000}
 : ${REPORTER:="spec"}
 
 node ./bin/dev-server.js &
