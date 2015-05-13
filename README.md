@@ -33,10 +33,10 @@ var remoteDB = new PouchDB({
 ### Server
 
 ```js
-var PouchRemoteStream = require('pouch-remote-stream/server');
+var PouchServerStream = require('pouch-remote-stream/server');
 
 var server = require('net').createServer(function(conn) {
-  conn.pipe(PouchRemoteStream()).pipe(conn);
+  conn.pipe(PouchServerStream()).pipe(conn);
 });
 ```
 

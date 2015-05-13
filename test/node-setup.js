@@ -1,4 +1,4 @@
-console.log('running node setup...');
+var log = require('debug')('pouchdb:remotestream:client');
 
 var PouchRemoteStream = require('../');
 var remote = PouchRemoteStream();
@@ -16,7 +16,25 @@ global.PouchDB = global.PouchDB.defaults({
 });
 
 var net = require('net');
-var stream = net.connect(3004);
+var stream = net.connect(3004, function() {
+  log('connected');
+});
 stream.pipe(remote).pipe(stream);
+
+// remote.on('data', function(d) {
+//   log('*** client GOT DATA', d.toString());
+// });
+
+stream.on('data', function(d) {
+  log('CLIENT GOT DATA', d.toString());
+});
+
+stream.once('close', function() {
+  log('client stream closed');
+});
+
+stream.once('end', function() {
+  log('client stream ended');
+});
 
 console.log('node setup ran');

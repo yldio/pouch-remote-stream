@@ -1,6 +1,5 @@
-var MuxDemux = require('mux-demux');
-var inherits = require('inherits');
+var MuxDemux = require('mux-demux/msgpack');
 
-module.exports = function RemoteStream(options) {
+module.exports = function RemoteStream() {
   return MuxDemux();
 };

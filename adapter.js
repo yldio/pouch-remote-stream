@@ -8,7 +8,7 @@ var clientMethods = require('./client-methods');
 
 function RemoteStream(opts, callback) {
   try {
-    log('adapter constructor called', opts);
+    log('adapter constructor called');
     var api = this;
 
     if (typeof opts === 'string') {
@@ -20,8 +20,6 @@ function RemoteStream(opts, callback) {
     }
 
     opts = extend({}, opts);
-
-    log('constructor called', opts);
 
     if (! opts.remote) {
       var err = new Error('need a remote option');
@@ -37,155 +35,79 @@ function RemoteStream(opts, callback) {
       return callback(new Error(optsErrMessage));
     }
 
-    log('going to create remote stream');
+    log('going to create remote stream', opts.name);
     var remoteStream = opts.remote.createStream(opts.name);
 
     var server = RPC();
+
     remoteStream.pipe(server).pipe(remoteStream);
+
     var remote = server.wrap(clientMethods);
 
-    api.type = 'remote';
-
-    api._id = server.id;
-
-    api.compact = server.compact;
-
-    api._info = server.info;
-
-    api.get = function get(id, opts, cb) {
-      if (typeof opts === 'function') {
-        callback = opts;
-        opts = {};
-      }
-      server.get(id, opts, cb);
-    };
-
-    api.remove = function remove(docOrId, optsOrRev, opts, callback) {
-      var doc;
-      if (typeof optsOrRev === 'string') {
-        // id, rev, opts, callback style
-        doc = {
-          _id: docOrId,
-          _rev: optsOrRev
-        };
-        if (typeof opts === 'function') {
-          callback = opts;
-          opts = {};
-        }
-      } else {
-        // doc, opts, callback style
-        doc = docOrId;
-        if (typeof optsOrRev === 'function') {
-          callback = optsOrRev;
-          opts = {};
-        } else {
-          callback = opts;
-          opts = optsOrRev;
-        }
-      }
-      var rev = (doc._rev || opts.rev);
-
-      server.remove(doc._id, rev, callback);
-    };
-
-    api.getAttachment = function (docId, attachmentId, opts, callback) {
-      if (typeof opts === 'function') {
-        callback = opts;
-        opts = {};
-      }
-      server.getAttachment(docId, attachmentId, opts, callback)
-    };
-
-    api.removeAttachment = server.removeAttachment;
-
-    api.putAttachment = function (docId, attachmentId, rev, blob,
-                                  type, callback) {
-      if (typeof type === 'function') {
-        callback = type;
-        type = blob;
-        blob = rev;
-        rev = null;
-      }
-      if (typeof type === 'undefined') {
-        type = blob;
-        blob = rev;
-        rev = null;
-      }
-
-      if (typeof blob === 'string') {
-        var binary;
-        try {
-          binary = utils.atob(blob);
-        } catch (err) {
-          // it's not base64-encoded, so throw error
-          return callback(errors.error(errors.BAD_ARG,
-            'Attachments need to be base64 encoded'));
-        }
-        if (isBrowser) {
-          blob = utils.createBlob([utils.binaryStringToArrayBuffer(binary)], {type: type});
-        } else {
-          blob = binary ? new buffer(binary, 'binary') : '';
-        }
-      }
-
-      var args = [docId, attachmentId, rev, null, type];
-
-      server.putAttachment(docId, attachmentId, rev, blob, type, callback);
-    };
-
-    api.put = function() {
-      var args = Array.prototype.slice.call(arguments);
-      var temp, temptype, opts;
-      var doc = args.shift();
-      var id = '_id' in doc;
-      var callback = args.pop();
-      if (typeof doc !== 'object' || Array.isArray(doc)) {
-        return callback(errors.error(errors.NOT_AN_OBJECT));
-      }
-
-      doc = clone(doc);
-
-      preprocessAttachments(doc, function() {
-        while (args.length) {
-          temp = args.shift();
-          temptype = typeof temp;
-          if (temptype === "string" && !id) {
-            doc._id = temp;
-            id = true;
-          } else if (temptype === "string" && id && !('_rev' in doc)) {
-            doc._rev = temp;
-          } else if (temptype === "object") {
-            opts = utils.clone(temp);
+    Object.keys(remote).forEach(function(method) {
+      var m = remote[method];
+      if (typeof m == 'function') {
+        remote[method] = function() {
+          log('client calling %s (%j)', method, arguments);
+          var args = Array.prototype.slice.call(arguments);
+          var cb = args[args.length - 1];
+          if ((typeof cb) != 'function') {
+            cb = function(err) {
+              if (err) {
+                api.emit('error', err);
+              }
+            };
+            args.push(cb);
           }
-        }
-        opts = opts || {};
 
-        server.put(doc, opts, callback);
-      });
-    };
+          args.pop();
+          args.push(function() {
+            log('got reply from %s: ', method, arguments);
+            cb.apply(null, arguments);
+          });
 
-    api.post = function (doc, opts, callback) {
-      if (typeof opts === 'function') {
-        callback = opts;
-        opts = {};
+          log('client called %s ', method, args);
+          try {
+            m.apply(remote, args);
+          } catch(err) {
+            log('error calling %s:', method, err.stack || err.message || err);
+            cb(err);
+          }
+
+        };
       }
-      opts = utils.clone(opts);
+    });
 
-      server.post(doc, opts, callback);
+    api.type = function() {
+      return 'remote';
     };
 
-    api._bulkDocs = server.bulkDocs;
+    api._id = remote.id;
 
-    api._allDocs = function (opts, callback) {
-      if (typeof opts === 'function') {
-        callback = opts;
-        opts = {};
-      }
-      server.allDocs(opts, callback);
-    };
+    api.compact = remote.compact;
+
+    api._info = remote.info;
+
+    api.get = remote.get;
+
+    api.remove = remote.remove;
+
+    api.getAttachment = remote.getAttachment;
+
+    api.removeAttachment = remote.removeAttachment;
+
+    api.putAttachment = remote.putAttachment;
+
+    api.put = remote.put;
+
+    api.post = remote.post;
+
+    api._bulkDocs = remote.bulkDocs;
+
+    api._allDocs = remote.allDocs;
 
     api._changes = function (opts) {
-      opts = utils.clone(opts);
+      opts = clone(opts);
 
       if (opts.continuous) {
         var messageId = uuid();
@@ -204,7 +126,7 @@ function RemoteStream(opts, callback) {
           opts.onComplete(err);
         });
 
-        server.liveChanges(opts, channel, function(err) {
+        remote.liveChanges(opts, channel, function(err) {
           if (err) {
             opts.complete(err);
           }
@@ -221,7 +143,7 @@ function RemoteStream(opts, callback) {
       var returnDocs = 'returnDocs' in opts ? opts.returnDocs : true;
       opts.returnDocs = true;
 
-      server.changes(opts, function (err, res) {
+      remote.changes(opts, function (err, res) {
         if (err) {
           opts.complete(err);
         }
@@ -235,54 +157,41 @@ function RemoteStream(opts, callback) {
       });
     };
 
-    api.revsDiff = function (req, opts, callback) {
-      // If no options were given, set the callback to be the second parameter
-      if (typeof opts === 'function') {
-        callback = opts;
-        opts = {};
-      }
+    api.revsDiff = remote.revsDiff;
 
-      server.revsDiff(req, opts, callback);
-    };
+    api._query = remote.query;
 
-
-    api._query = function (fun, opts, callback) {
-      if (typeof opts === 'function') {
-        callback = opts;
-        opts = {};
-      }
-      var funEncoded = fun;
-      if (typeof fun === 'function') {
-        funEncoded = {map: fun};
-      }
-      server.query(funEncoded, opts, callback);
-    };
-
-    api._viewCleanup = server.viewCleanup;
+    api._viewCleanup = remote.viewCleanup;
 
     api._close = function close(callback) {
-      remoteStream.end();
+      process.nextTick(function() {
+        remoteStream.end();
+      });
+      callback();
     };
 
     api.destroy = function (callback) {
-      server.destroy(function(err, res) {
+      remote.destroy(function(err, res) {
         if (err) {
           callback(err);
         } else {
           api._close(function (err) {
             if (err) {
-              return callback(err);
+              callback(err);
+            } else {
+              api.emit('destroyed');
+              api.constructor.emit('destroyed', api._name);
+              callback(null, res);
             }
-            api.emit('destroyed');
-            api.constructor.emit('destroyed', api._name);
-            callback(null, res);
           });
         }
       });
     };
+
+    callback(null, api);
   } catch(err) {
     console.error(err.stack || err.message || err);
-    throw err;
+    callback(err);
   }
 };
 
@@ -310,7 +219,6 @@ function preprocessAttachments(doc, cb) {
 };
 
 RemoteStream.valid = function() {
-  console.log('IZ VAKId=??');
   return true;
 };
 
@@ -322,7 +230,7 @@ RemoteStream.destroy = function(name, opts, callback) {
 var pouchExtend = require('pouchdb-extend');
 
 function clone(obj) {
-  return pouchExtend.extend(true, {}, obj);
+  return pouchExtend(true, {}, obj);
 };
 
 /* istanbul ignore next */
