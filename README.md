@@ -1,61 +1,36 @@
-# pouch-remote-stream
+# pouch-remote-client-stream
 
-PouchDB remote streams, client and server.
+Remote PouchDB stream
 
-Heavily based on [nolanlawson/socket-pouch](https://github.com/nolanlawson/socket-pouch).
-
-## Install
-
-```
-$ npm install pouch-remote-stream
-```
-
-## Use
-
-### Client
+## Use with reconnect:
 
 ```js
-var PouchDB = require('pouchdb');
-var PouchRemoteStream = require('pouch-remote-stream');
-PouchDB.adapter('remote', PouchRemoteStream.adapter);
+var Remote = require('pouch-remote-stream');
+PouchDB.adapter('remote', Remote.adapter);
+var Reconnect = require('reconnect-core');
 
-var stream = require('net').connect(port, host);
-var remote = PouchRemoteStream();
-stream.pipe(remote).pipe(stream);
+var reconnect = Reconnect(function(options) {
+  return net.connect(options.port, options.host);
+});
 
-var remoteDB = new PouchDB({
-  adapter: 'remote',
-  name: 'mydb',
-  remote: remote 
+var options = {
+  port: 80,
+  host: '127.0.0.1'
+};
+
+var re = reconnect(options, function(stream) {
+
+  var remote = Remote();
+
+  var remoteDB = new PouchDB({
+    adapter: 'remote',
+    name: 'mydb',
+    remote: remote 
+  });
+
+  stream.pipe(remote).pipe(stream);
+
+  // use remoteDB
+
 });
 ```
-
-### Server
-
-```js
-var PouchServerStream = require('pouch-remote-stream/server');
-
-var server = require('net').createServer(function(conn) {
-  conn.pipe(PouchServerStream()).pipe(conn);
-});
-```
-
-
-## Debug
-
-### Node
-
-Enable debug output by setting environment variable `DEBUG` to `pouchdb:remotestream:*`.
-
-
-### Browser
-
-In the browser, you can enable debugging by using PouchDB's logger:
-
-```js
-PouchDB.debug.enable('pouchdb:remotestream:*');
-```
-
-# License
-
-ISC
