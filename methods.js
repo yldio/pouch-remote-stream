@@ -1,3 +1,3 @@
 module.exports = [
-  'get'
+  'destroy', 'get', '_bulkDocs'
 ];

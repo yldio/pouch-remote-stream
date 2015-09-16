@@ -17,6 +17,10 @@ function Adapter(opts, callback) {
       return error('need a remote option');
     }
 
+    if (! opts.originalName) {
+      return error('need a originalName option');
+    }
+
     this._name = opts.originalName;
     this.skipDependentDatabase = true;
 
@@ -45,7 +49,7 @@ function Adapter(opts, callback) {
     return function() {
       var args = parseArgs(arguments);
       var cb = extractCB(args) || noop;
-      opts.remote.invoke(method, args, cb);
+      opts.remote.invoke(opts.originalName, method, args, cb);
     }
   }
 

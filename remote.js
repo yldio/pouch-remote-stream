@@ -15,6 +15,7 @@ function Remote(options) {
   if (! (this instanceof Remote)) {
     return new Remote(options);
   }
+  debug('remote options:', options);
 
   var remote = this;
 
@@ -29,11 +30,11 @@ Remote.prototype.stream = function() {
   return this._stream;
 }
 
-Remote.prototype.invoke = function invoke(method, args, cb) {
+Remote.prototype.invoke = function invoke(db, method, args, cb) {
   debug('invoke, method=%s, args=%j', method, args);
   var seq = this._sequence();
   this._callbacks[seq] = cb;
-  this._stream._readable.write([seq, method, args]);
+  this._stream._readable.write([seq, db, method, args]);
 }
 
 Remote.prototype._sequence = function _sequence() {

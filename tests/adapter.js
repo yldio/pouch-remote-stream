@@ -8,6 +8,7 @@ var expect = Code.expect;
 var Remote = require('../');
 var PouchDB = require('pouchdb');
 
+var seq = -1;
 
 describe('Adapter', function() {
 
@@ -21,30 +22,71 @@ describe('Adapter', function() {
 
   it('remote db can be created', function(done) {
     remote = Remote();
-    remoteDB = new PouchDB({
+    remoteDB = new PouchDB('dbname', {
       adapter: 'remote',
-      name: 'mydb',
       remote: remote
     });
     done();
   });
 
+  it('can be used to destroy a db', function(done) {
+    var seq = sequence();
+    var stream = remote.stream();
+    stream.once('data', function(d) {
+      expect(d).to.deep.equal([seq, 'dbname', 'destroy', []]);
+      stream.write([seq, [null, {ok: true}]]);
+    });
+    remoteDB.destroy(function(err, result) {
+      if (err) {
+        done(err);
+      }
+      else {
+        expect(result).to.deep.equal({ok: true});
+        done();
+      }
+    });
+  });
+
+  it('can be used to put a doc', function(done) {
+    var seq = sequence();
+    var stream = remote.stream();
+
+    stream.once('data', function(d) {
+      expect(d).to.deep.equal([seq,"dbname","_bulkDocs",[{"docs":[{"_id":"id","a":1,"b":2}]},{"new_edits":true}]]);
+      stream.write([seq, [null, {ok: true, _id: 'id', _rev: 1}]]);
+    });
+
+    remoteDB.put({_id: 'id', a:1,b:2}, function(err, result) {
+      if (err) {
+        done(err);
+      }
+      else {
+        expect(result).to.deep.equal({ok: true, _id: 'id', _rev: 1});
+        done();
+      }
+    });
+  });
+
+
   it('can be used to get a doc', function(done) {
+    var seq = sequence();
     var stream = remote.stream();
     stream.on('data', function(d) {
-      expect(d).to.deep.equal([0, 'get', ['alice']]);
-      stream.write([0, [null, {}]]);
+      expect(d).to.deep.equal([seq, 'dbname', 'get', ['alice']]);
+      stream.write([seq, [null, {ok: true}]]);
     });
     remoteDB.get('alice', function(err, result) {
       if (err) {
         done(err);
       }
       else {
-        expect(result).to.deep.equal({});
+        expect(result).to.deep.equal({ok: true});
         done();
       }
     });
   });
+
+
 
   //   server.inject('/cart', function(res) {
   //     expect(res.statusCode).to.be.equal(500);
@@ -80,3 +122,9 @@ describe('Adapter', function() {
 //   // use remoteDB
 
 // });
+
+function xit() {}
+
+function sequence() {
+  return ++seq;
+}

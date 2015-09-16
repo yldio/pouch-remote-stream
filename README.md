@@ -22,9 +22,8 @@ var re = reconnect(options, function(stream) {
 
   var remote = Remote();
 
-  var remoteDB = new PouchDB({
+  var remoteDB = new PouchDB('mydb', {
     adapter: 'remote',
-    name: 'mydb',
     remote: remote 
   });
 
