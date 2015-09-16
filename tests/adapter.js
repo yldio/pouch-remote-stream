@@ -11,6 +11,7 @@ var PouchDB = require('pouchdb');
 
 describe('Adapter', function() {
 
+  var remote;
   var remoteDB;
 
   it('can get installed into pouchdb', function(done) {
@@ -19,19 +20,29 @@ describe('Adapter', function() {
   });
 
   it('remote db can be created', function(done) {
+    remote = Remote();
     remoteDB = new PouchDB({
       adapter: 'remote',
       name: 'mydb',
-      remote: Remote()
+      remote: remote
     });
     done();
   });
 
   it('can be used to get a doc', function(done) {
-    console.log('gettin');
+    var stream = remote.stream();
+    stream.on('data', function(d) {
+      expect(d).to.deep.equal([0, 'get', ['alice']]);
+      stream.write([0, [null, {}]]);
+    });
     remoteDB.get('alice', function(err, result) {
-      console.log('hey');
-      done();
+      if (err) {
+        done(err);
+      }
+      else {
+        expect(result).to.deep.equal({});
+        done();
+      }
     });
   });
 

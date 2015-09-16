@@ -28,7 +28,7 @@ var re = reconnect(options, function(stream) {
     remote: remote 
   });
 
-  stream.pipe(remote).pipe(stream);
+  stream.pipe(remote.stream()).pipe(stream);
 
   // use remoteDB
 
