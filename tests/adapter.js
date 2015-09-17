@@ -207,8 +207,6 @@ describe('Adapter', function() {
       expect(d).to.deep.equal([seq,"dbname","_changes",[0,{"since":0,"descending":false}]]);
       stream.write([seq, [null, {ok: true}]]);
 
-      console.log('CHANGES:', changes);
-
       changes.forEach(function(change) {
         stream.write(['_event', 'change', [0, change]]);
       });
@@ -223,11 +221,61 @@ describe('Adapter', function() {
     });
 
     feed.once('complete', function(results) {
-      expect(curSeq).to.equal(1);
+      expect(curSeq).to.equal(changes.length - 1);
       expect(results).to.deep.equal({results: changes, last_seq: 3});
       done();
     });
   });
+
+
+  it('can listen to changes live', function(done) {
+    var changes = [
+      {
+        "id": "doc1",
+        "changes": [ { "rev": "1-9152679630cc461b9477792d93b83eae" } ],
+        "doc": {
+          "_id": "doc1",
+          "_rev": "1-9152679630cc461b9477792d93b83eae"
+        },
+        "seq": 1
+      },
+      {
+        "id": "doc2",
+        "changes": [ { "rev": "2-9b50a4b63008378e8d0718a9ad05c7af" } ],
+        "doc": {
+          "_id": "doc2",
+          "_rev": "2-9b50a4b63008378e8d0718a9ad05c7af",
+          "_deleted": true
+        },
+        "deleted": true,
+        "seq": 3
+      },
+    ];
+    var curSeq = -1;
+
+    var seq = sequence();
+    var stream = remote.stream();
+    stream.once('data', function(d) {
+      d = JSON.parse(JSON.stringify(d));
+      expect(d).to.deep.equal([seq,"dbname","_changes",[1,{"live":true,"continuous":true,"since":0,"descending":false}]]);
+      stream.write([seq, [null, {ok: true}]]);
+
+      changes.forEach(function(change) {
+        stream.write(['_event', 'change', [1, change]]);
+      });
+    });
+
+    var feed = remoteDB.changes({live: true});
+
+    feed.on('change', function(change) {
+      curSeq ++;
+      expect(change).to.deep.equal(changes[curSeq]);
+      if (curSeq == changes.length - 1) {
+        done();
+      }
+    });
+  });
+
 
 });
 
