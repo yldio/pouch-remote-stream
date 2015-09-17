@@ -6,7 +6,8 @@ var duplexify = require('duplexify');
 
 
 module.exports = function Stream(callbacks, opts) {
-  return duplexify(writable(opts), readable(opts), opts);
+  var s = duplexify(writable(opts), readable(opts), opts);
+  return s;
 
   function writable(options) {
     debug('writable options:', options);
@@ -23,12 +24,21 @@ module.exports = function Stream(callbacks, opts) {
     }
     else {
       var seq = data[0];
-      var cb = callbacks[seq];
-      if (cb) {
-        delete callbacks[seq];
-        cb.apply(null, data[1]);
+      if (seq == '_event') {
+        var event = data[1];
+        var data = data[2];
+        debug('event: %s (%j)', event, data);
+        s.emit(event, data);
+        callback();
       }
-      callback();
+      else {
+        var cb = callbacks[seq];
+        if (cb) {
+          delete callbacks[seq];
+          cb.apply(null, data[1]);
+        }
+        callback();
+      }
     }
   }
 

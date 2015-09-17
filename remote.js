@@ -7,6 +7,8 @@ var Stream = require('./stream');
 module.exports = Remote;
 
 var MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER || 9007199254740991;
+var CHANGE_EVENTS = ['change', 'complete', 'error'];
+
 var defaults = {
   objectMode: true
 };
@@ -20,22 +22,55 @@ function Remote(options) {
   var remote = this;
 
   this._seq = -1;
+  this._listenerSeq = -1;
   this._callbacks = {};
+  this._listeners = {};
 
   var opts = extend({}, defaults, options && options.stream);
   this._stream = Stream(this._callbacks, opts);
+
+  CHANGE_EVENTS.forEach(function(event) {
+    remote._stream.on(event, function(data) {
+      debug('event', event, data);
+      var listener = remote._listeners[data[0]];
+      if (listener) {
+        debug('have listener for event %s', event);
+        process.nextTick(function() {
+          debug('emitting event %s (%j)', event, data[1]);
+          var emitted = listener.emit(event, data[1]);
+          debug('emitted event %s ? %j', event, emitted);
+        });
+      }
+    });
+  });
 }
 
 Remote.prototype.stream = function() {
   return this._stream;
-}
+};
 
 Remote.prototype.invoke = function invoke(db, method, args, cb) {
   debug('invoke, method=%s, args=%j', method, args);
   var seq = this._sequence();
-  this._callbacks[seq] = cb;
+  if (cb) {
+    this._callbacks[seq] = cb;
+  }
   this._stream._readable.write([seq, db, method, args]);
-}
+};
+
+Remote.prototype.addListener = function addListener(listener) {
+  var listenerId = this._listenerSequence();
+
+  this._listeners[listenerId] = listener;
+
+  debug('added listener %d', listenerId);
+
+  return listenerId;
+};
+
+Remote.prototype.removeListener = function removeListener(id) {
+  delete this._listeners[id];
+};
 
 Remote.prototype._sequence = function _sequence() {
   var n = ++ this._seq;
@@ -45,3 +80,10 @@ Remote.prototype._sequence = function _sequence() {
   return n;
 }
 
+Remote.prototype._listenerSequence = function _sequence() {
+  var n = ++ this._listenerSeq;
+  if (n > MAX_SAFE_INTEGER) {
+    this._listenerSeq = n = 0;
+  }
+  return n;
+}
