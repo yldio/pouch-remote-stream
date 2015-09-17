@@ -104,6 +104,34 @@ describe('Adapter', function() {
     });
   });
 
+  it('can be used to remove a doc', function(done) {
+    var seq = sequence();
+    var stream = remote.stream();
+    stream.once('data', function(d) {
+      expect(d).to.deep.equal([seq, 'dbname', '_bulkDocs', [{docs: [
+        {
+          _id: 'id',
+          _rev: 'rev',
+          _deleted: true,
+        }]},
+        {
+          was_delete: true,
+          new_edits: true,
+        }
+        ]]);
+      stream.write([seq, [null, {ok: true, id: 'id', rev: 2}]]);
+    });
+    remoteDB.remove('id', 'rev', function(err, result) {
+      if (err) {
+        done(err);
+      }
+      else {
+        expect(result).to.deep.equal({ok: true, id: 'id', rev: 2});
+        done();
+      }
+    });
+  });
+
 });
 
 
