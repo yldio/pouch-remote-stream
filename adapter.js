@@ -3,14 +3,25 @@
 var once = require('once');
 var timers = require('timers');
 var methods = require('./methods');
-var debug = require('debug')('pouchdb-remote-client-stream:adapter');
+var Promise = require('lie');
+var debug = require('debug')('pouchdb-remote-stream:adapter');
 var EventEmitter = require('events').EventEmitter;
+var promisify = require('./lib/promisify');
 
 module.exports = Adapter;
 
 function Adapter(opts, callback) {
   var adapter = this;
-  var cb = callback ? once(callback) : noop;
+  var cb;
+
+  if (callback) {
+    debug('I have callback');
+    cb = once(callback);
+  }
+  else {
+    debug('no callback');
+    console.trace();
+  }
 
   try {
     debug('adapter constructor called', opts);
@@ -25,7 +36,9 @@ function Adapter(opts, callback) {
     this._name = opts.originalName;
     this.skipDependentDatabase = true;
 
-    timers.setImmediate(cb, null, this);
+    if (cb) {
+      timers.setImmediate(cb, null, this);
+    }
     debug('done constructing adapter');
 
     this.type = type;
@@ -49,11 +62,12 @@ function Adapter(opts, callback) {
   }
 
   function wrap(method) {
-    return function() {
+    return promisify(function() {
+      debug('calling %s, (%j)', method, arguments);
       var args = parseArgs(arguments);
-      var cb = extractCB(args) || noop;
+      var cb = extractCB(args);
       opts.remote.invoke(opts.originalName, method, args, cb);
-    }
+    });
   }
 
   function changes(options) {
@@ -114,6 +128,9 @@ function extractCB(args) {
   var cb = args[args.length - 1];
   if (typeof cb == 'function') {
     args.pop();
+  }
+  else {
+    cb = undefined;
   }
 
   return cb;

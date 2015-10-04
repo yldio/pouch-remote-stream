@@ -1,6 +1,6 @@
 'use strict';
 
-var debug = require('debug')('pouchdb-remote-client-stream:remote');
+var debug = require('debug')('pouchdb-remote-stream:remote');
 var extend = require('xtend');
 var Stream = require('./stream');
 
@@ -50,9 +50,13 @@ Remote.prototype.stream = function() {
 };
 
 Remote.prototype.invoke = function invoke(db, method, args, cb) {
-  debug('invoke, method=%s, args=%j', method, args);
+  debug('invoke, db=%s, method=%s, args=%j, cb=', db, method, args, cb);
   var seq = this._sequence();
   if (cb) {
+    if (typeof cb != 'function') {
+      throw new Error('callback is not a function');
+    }
+    debug('callback:', cb);
     this._callbacks[seq] = cb;
   }
   this._stream._readable.write([seq, db, method, args]);

@@ -1,4 +1,4 @@
-# pouch-remote-client-stream
+# pouch-remote-stream
 
 Remote PouchDB stream
 
