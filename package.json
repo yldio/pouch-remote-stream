@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/pgte/pouch-remote-stream#readme",
   "devDependencies": {
+    "pouch-stream-tests": "0.0.1",
     "pouch-stream-server": "0.0.1"
   },
   "dependencies": {
