@@ -61,8 +61,10 @@ module.exports = function Stream(callbacks, opts) {
 
 function errorForPayload(payload) {
   var err = payload && payload[0];
-  if (err && !(err instanceof Error)) {
+  if (err) {
     var error = payload[0] = new Error(err.message || 'Unknown error');
     error.status = error.statusCode = err.status;
+    error.error = err.error;
+    error.name = err.name;
   }
 }
