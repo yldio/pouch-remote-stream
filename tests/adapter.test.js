@@ -20,6 +20,18 @@ describe('Adapter', function() {
     done();
   });
 
+  it('remote db cannot be created without remotes', function(done) {
+    remote = Remote({});
+    remoteDB = new PouchDB('dbname', {
+      adapter: 'remote'
+    });
+    remoteDB.get('a', function(err) {
+      expect(err).to.be.an.object();
+      expect(err.message).to.equal('need a remote option');
+      done();
+    });
+  });
+
   it('remote db can be created', function(done) {
     remote = Remote({});
     remoteDB = new PouchDB('dbname', {

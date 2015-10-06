@@ -11,14 +11,7 @@ module.exports = Adapter;
 
 function Adapter(opts, callback) {
   var adapter = this;
-  var cb;
-
-  if (callback) {
-    debug('I have callback');
-    cb = once(callback);
-  } else {
-    debug('no callback');
-  }
+  var cb = once(callback);
 
   try {
     debug('adapter constructor called', opts);
