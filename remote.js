@@ -10,7 +10,7 @@ var MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER || 9007199254740991;
 var CHANGE_EVENTS = ['change', 'complete', 'error'];
 
 var defaults = {
-  objectMode: true
+  objectMode: true,
 };
 
 function Remote(options) {
@@ -29,13 +29,13 @@ function Remote(options) {
   var opts = extend({}, defaults, options && options.stream);
   this._stream = Stream(this._callbacks, opts);
 
-  CHANGE_EVENTS.forEach(function(event) {
-    remote._stream.on(event, function(data) {
+  CHANGE_EVENTS.forEach(function eachEvent(event) {
+    remote._stream.on(event, function onEvent(data) {
       debug('event', event, data);
       var listener = remote._listeners[data[0]];
       if (listener) {
         debug('have listener for event %s', event);
-        process.nextTick(function() {
+        process.nextTick(function onNextTick() {
           debug('emitting event %s (%j)', event, data[1]);
           var emitted = listener.emit(event, data[1]);
           debug('emitted event %s ? %j', event, emitted);
@@ -45,7 +45,7 @@ function Remote(options) {
   });
 }
 
-Remote.prototype.stream = function() {
+Remote.prototype.stream = function stream() {
   return this._stream;
 };
 
@@ -53,7 +53,7 @@ Remote.prototype.invoke = function invoke(db, method, args, cb) {
   debug('invoke, db=%s, method=%s, args=%j, cb=', db, method, args, cb);
   var seq = this._sequence();
   if (cb) {
-    if (typeof cb != 'function') {
+    if (typeof cb !== 'function') {
       throw new Error('callback is not a function');
     }
     debug('callback:', cb);
@@ -82,7 +82,7 @@ Remote.prototype._sequence = function _sequence() {
     this._seq = n = 0;
   }
   return n;
-}
+};
 
 Remote.prototype._listenerSequence = function _sequence() {
   var n = ++ this._listenerSeq;
@@ -90,4 +90,4 @@ Remote.prototype._listenerSequence = function _sequence() {
     this._listenerSeq = n = 0;
   }
   return n;
-}
+};

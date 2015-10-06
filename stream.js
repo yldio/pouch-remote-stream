@@ -2,7 +2,6 @@
 
 var debug = require('debug')('pouchdb-remote-stream:stream');
 var stream = require('stream');
-var extend = require('xtend');
 var duplexify = require('duplexify');
 
 module.exports = function Stream(callbacks, opts) {
@@ -11,27 +10,25 @@ module.exports = function Stream(callbacks, opts) {
 
   function writable(options) {
     debug('writable options:', options);
-    var s = new stream.Writable(options);
-    s._write = _write;
-    return s;
+    var st = new stream.Writable(options);
+    st._write = _write;
+    return st;
   }
 
   function _write(data, encoding, callback) {
     debug('_write', data);
-    if (typeof data != 'object') {
+    if (typeof data !== 'object') {
       callback(new Error('expected object, instead got ' +
         typeof data));
-    }
-    else {
+    } else {
       var seq = data[0];
-      if (seq == '_event') {
+      if (seq === '_event') {
         var event = data[1];
-        var data = data[2];
-        debug('event: %s (%j)', event, data);
-        s.emit(event, data);
+        var eventData = data[2];
+        debug('event: %s (%j)', event, eventData);
+        s.emit(event, eventData);
         callback();
-      }
-      else {
+      } else {
         var cb = callbacks[seq];
         if (cb) {
           debug('have callback', cb);
@@ -39,13 +36,7 @@ module.exports = function Stream(callbacks, opts) {
           var payload = data[1];
           errorForPayload(payload);
           debug('applying callback with', payload);
-          try {
-            cb.apply(null, payload);
-          } catch(err) {
-            console.error(err.stack);
-            throw err;
-          }
-
+          cb.apply(null, payload);
           debug('applied callback');
         }
         callback();
@@ -57,7 +48,7 @@ module.exports = function Stream(callbacks, opts) {
     debug('readable options:', options);
     return new stream.PassThrough(options);
   }
-}
+};
 
 function errorForPayload(payload) {
   var err = payload && payload[0];

@@ -3,7 +3,6 @@
 var once = require('once');
 var timers = require('timers');
 var methods = require('./methods');
-var Promise = require('lie');
 var debug = require('debug')('pouchdb-remote-stream:adapter');
 var EventEmitter = require('events').EventEmitter;
 var promisify = require('./lib/promisify');
@@ -17,10 +16,8 @@ function Adapter(opts, callback) {
   if (callback) {
     debug('I have callback');
     cb = once(callback);
-  }
-  else {
+  } else {
     debug('no callback');
-    console.trace();
   }
 
   try {
@@ -43,30 +40,28 @@ function Adapter(opts, callback) {
 
     this.type = type;
 
-    methods.forEach(function(method) {
+    methods.forEach(function eachMethod(method) {
       adapter[method] = wrap(method);
     });
 
     this._changes = changes;
-
-  } catch(e) {
-    console.error(e);
+  } catch (e) {
     callback(e);
   }
 
   function error(err) {
-    if (typeof err != 'object') {
-      err = new Error(err);
+    var e = err;
+    if (typeof err !== 'object') {
+      e = new Error(err);
     }
-    cb(err);
+    cb(e);
   }
 
   function wrap(method) {
-    return promisify(function() {
+    return promisify(function promisified() {
       debug('calling %s, (%j)', method, arguments);
       var args = parseArgs(arguments);
-      var cb = extractCB(args);
-      opts.remote.invoke(opts.originalName, method, args, cb);
+      opts.remote.invoke(opts.originalName, method, args, extractCB(args));
     });
   }
 
@@ -84,11 +79,11 @@ function Adapter(opts, callback) {
     listener.cancel = cancel;
 
     listener.once('error', cancel);
-    listener.once('error', function(err) {
+    listener.once('error', function onceError(err) {
       options.complete(err);
     });
 
-    listener.on('change', function(change) {
+    listener.on('change', function onChange(change) {
       debug('change %j', change);
       results.last_seq = change.seq;
       if (!options.live) {
@@ -97,7 +92,7 @@ function Adapter(opts, callback) {
     });
     listener.on('change', options.onChange);
 
-    listener.once('complete', function() {
+    listener.once('complete', function onceComplete() {
       debug('complete, results = %j', results);
       options.complete(null, results);
     });
@@ -110,15 +105,13 @@ function Adapter(opts, callback) {
   }
 }
 
-Adapter.valid = function() {
+Adapter.valid = function valid() {
   return true;
 };
 
 function type() {
   return 'remote';
-};
-
-function noop() {};
+}
 
 function parseArgs(args) {
   return Array.prototype.slice.call(args);
@@ -126,10 +119,9 @@ function parseArgs(args) {
 
 function extractCB(args) {
   var cb = args[args.length - 1];
-  if (typeof cb == 'function') {
+  if (typeof cb === 'function') {
     args.pop();
-  }
-  else {
+  } else {
     cb = undefined;
   }
 

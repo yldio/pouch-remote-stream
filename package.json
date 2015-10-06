@@ -4,7 +4,9 @@
   "description": "PouchDB remote stream",
   "main": "index.js",
   "scripts": {
-    "test": "lab tests/*.js"
+    "test": "npm run coverage",
+    "style": "eslint .",
+    "coverage": "istanbul cover -- lab -l tests/*.js && istanbul check-coverage --statement 100 --branch 100 --function 100"
   },
   "repository": {
     "type": "git",
@@ -17,8 +19,11 @@
   },
   "homepage": "https://github.com/pgte/pouch-remote-stream#readme",
   "devDependencies": {
+    "eslint": "^1.6.0",
+    "istanbul": "^0.3.21",
+    "pouch-stream-server": "0.0.1",
     "pouch-stream-tests": "0.0.1",
-    "pouch-stream-server": "0.0.1"
+    "pre-commit": "^1.1.1"
   },
   "dependencies": {
     "argsarray": "0.0.1",
