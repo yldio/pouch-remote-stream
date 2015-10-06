@@ -13,41 +13,28 @@ function Adapter(opts, callback) {
   var adapter = this;
   var cb = once(callback);
 
-  try {
-    debug('adapter constructor called', opts);
-    if (! opts.remote) {
-      return error('need a remote option');
-    }
-
-    if (! opts.originalName) {
-      return error('need a originalName option');
-    }
-
-    this._name = opts.originalName;
-    this.skipDependentDatabase = true;
-
-    if (cb) {
-      timers.setImmediate(cb, null, this);
-    }
-    debug('done constructing adapter');
-
-    this.type = type;
-
-    methods.forEach(function eachMethod(method) {
-      adapter[method] = wrap(method);
-    });
-
-    this._changes = changes;
-  } catch (e) {
-    callback(e);
+  debug('adapter constructor called', opts);
+  if (! opts.remote) {
+    return error('need a remote option');
   }
 
+  this._name = opts.originalName;
+  this.skipDependentDatabase = true;
+
+  timers.setImmediate(cb, null, this);
+
+  this.type = type;
+
+  methods.forEach(function eachMethod(method) {
+    adapter[method] = wrap(method);
+  });
+
+  this._changes = changes;
+
+  debug('done constructing adapter');
+
   function error(err) {
-    var e = err;
-    if (typeof err !== 'object') {
-      e = new Error(err);
-    }
-    cb(e);
+    cb(new Error(err));
   }
 
   function wrap(method) {
@@ -72,7 +59,8 @@ function Adapter(opts, callback) {
     listener.cancel = cancel;
 
     listener.once('error', cancel);
-    listener.once('error', function onceError(err) {
+    listener.on('error', function onceError(err) {
+      debug('onceError');
       options.complete(err);
     });
 
@@ -92,7 +80,7 @@ function Adapter(opts, callback) {
     listener.once('complete', cancel);
 
     function cancel() {
-      debug('canceling listeenr %d', id);
+      debug('canceling listener %d', id);
       opts.remote.removeListener(id);
     }
   }
@@ -111,12 +99,5 @@ function parseArgs(args) {
 }
 
 function extractCB(args) {
-  var cb = args[args.length - 1];
-  if (typeof cb === 'function') {
-    args.pop();
-  } else {
-    cb = undefined;
-  }
-
-  return cb;
+  return args.pop();
 }
