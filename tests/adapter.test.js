@@ -239,6 +239,21 @@ describe('Adapter', function() {
     });
   });
 
+  it('can listen to a changes feed that errors', function(done) {
+    var stream = remote.stream();
+    var feed = remoteDB.changes();
+    sequence();
+
+    feed.once('error', function(err) {
+      expect(err).to.be.an.object();
+      expect(err.message).to.equal('ouch');
+      done();
+    });
+
+    setTimeout(function() {
+      stream.write(['_event', 'error', [1, {message: 'ouch'}]]);
+    }, 100);
+  });
 
   it('can listen to changes live', function(done) {
     var changes = [
@@ -269,11 +284,11 @@ describe('Adapter', function() {
     var stream = remote.stream();
     stream.once('data', function(d) {
       d = JSON.parse(JSON.stringify(d));
-      expect(d).to.deep.equal([seq,"dbname","_changes",[1,{"live":true,"continuous":true,"since":0,"descending":false}]]);
+      expect(d).to.deep.equal([seq,"dbname","_changes",[2,{"live":true,"continuous":true,"since":0,"descending":false}]]);
       stream.write([seq, [null, {ok: true}]]);
 
       changes.forEach(function(change) {
-        stream.write(['_event', 'change', [1, change]]);
+        stream.write(['_event', 'change', [2, change]]);
       });
     });
 

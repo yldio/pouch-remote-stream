@@ -6,7 +6,7 @@ var Stream = require('./stream');
 
 module.exports = Remote;
 
-var CHANGE_EVENTS = ['change', 'complete', 'error'];
+var CHANGE_EVENTS = ['change', 'complete', '_error'];
 
 var defaults = {
   stream: {
@@ -36,12 +36,16 @@ function Remote(options) {
     remote._stream.on(event, function onEvent(data) {
       debug('event', event, data);
       var listener = remote._listeners[data[0]];
+      var eventName = event;
+      if (eventName == '_error') {
+        eventName = 'error';
+      }
       if (listener) {
-        debug('have listener for event %s', event);
+        debug('have listener for event %s', eventName);
         process.nextTick(function onNextTick() {
-          debug('emitting event %s (%j)', event, data[1]);
-          var emitted = listener.emit(event, data[1]);
-          debug('emitted event %s ? %j', event, emitted);
+          debug('emitting event %s (%j)', eventName, data[1]);
+          var emitted = listener.emit(eventName, data[1]);
+          debug('emitted event %s ? %j', eventName, emitted);
         });
       }
     });

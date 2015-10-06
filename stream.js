@@ -25,8 +25,13 @@ module.exports = function Stream(callbacks, opts) {
       if (seq === '_event') {
         var event = data[1];
         var eventData = data[2];
-        debug('event: %s (%j)', event, eventData);
-        s.emit(event, eventData);
+        var eventName = event;
+        if (eventName == 'error') {
+          debug('we have an error event here');
+          eventName = '_error';
+        }
+        debug('emitting event: %s (%j)', eventName, eventData);
+        s.emit(eventName, eventData);
         callback();
       } else {
         var cb = callbacks[seq];
