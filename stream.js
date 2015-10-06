@@ -17,35 +17,30 @@ module.exports = function Stream(callbacks, opts) {
 
   function _write(data, encoding, callback) {
     debug('_write', data);
-    if (typeof data !== 'object') {
-      callback(new Error('expected object, instead got ' +
-        typeof data));
-    } else {
-      var seq = data[0];
-      if (seq === '_event') {
-        var event = data[1];
-        var eventData = data[2];
-        var eventName = event;
-        if (eventName == 'error') {
-          debug('we have an error event here');
-          eventName = '_error';
-        }
-        debug('emitting event: %s (%j)', eventName, eventData);
-        s.emit(eventName, eventData);
-        callback();
-      } else {
-        var cb = callbacks[seq];
-        if (cb) {
-          debug('have callback', cb);
-          delete callbacks[seq];
-          var payload = data[1];
-          errorForPayload(payload);
-          debug('applying callback with', payload);
-          cb.apply(null, payload);
-          debug('applied callback');
-        }
-        callback();
+    var seq = data[0];
+    if (seq === '_event') {
+      var event = data[1];
+      var eventData = data[2];
+      var eventName = event;
+      if (eventName == 'error') {
+        debug('we have an error event here');
+        eventName = '_error';
       }
+      debug('emitting event: %s (%j)', eventName, eventData);
+      s.emit(eventName, eventData);
+      callback();
+    } else {
+      var cb = callbacks[seq];
+      if (cb) {
+        debug('have callback', cb);
+        delete callbacks[seq];
+        var payload = data[1];
+        errorForPayload(payload);
+        debug('applying callback with', payload);
+        cb.apply(null, payload);
+        debug('applied callback');
+      }
+      callback();
     }
   }
 
@@ -58,7 +53,7 @@ module.exports = function Stream(callbacks, opts) {
 function errorForPayload(payload) {
   var err = payload && payload[0];
   if (err) {
-    var error = payload[0] = new Error(err.message || 'Unknown error');
+    var error = payload[0] = new Error(err.message);
     error.status = error.statusCode = err.status;
     error.error = err.error;
     error.name = err.name;
