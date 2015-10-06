@@ -7,6 +7,7 @@ var expect = Code.expect;
 var Remote = require('../');
 var PouchDB = require('pouchdb');
 var async = require('async');
+var EventEmitter = require('events');
 
 describe('max sequence', function() {
 
@@ -18,7 +19,7 @@ describe('max sequence', function() {
   });
 
 
-  it('max sequence will roll', function(done) {
+  it('sequence will roll', function(done) {
     var stream = remote.stream()
     var expectedSeq = -1;
     var keys = ['a', 'b', 'c', 'd', 'e'];
@@ -35,6 +36,25 @@ describe('max sequence', function() {
 
     function allGot(err) {
       expect(err).to.be.null();
+    }
+  });
+
+  it('listener sequence will roll', function(done) {
+    var id;
+    var listener = new EventEmitter();
+    for(var i = 0 ; i < 5 ; i ++) {
+      id = remote.addListener(listener);
+      expect(id).to.equal(i % 4);
+    }
+    var pending = 5;
+    listener.on('change', function() {
+      if (-- pending === 0) {
+        done();
+      }
+    });
+    var stream = remote.stream()
+    for(var i = 0 ; i < 5 ; i ++) {
+      stream.write(['_event', 'change', [i % 4, 'yay']]);
     }
   });
 });

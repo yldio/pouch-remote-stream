@@ -12,7 +12,7 @@ var defaults = {
   stream: {
     objectMode: true,
   },
-  maxSeq: Number.MAX_SAFE_INTEGER || 9007199254740991,
+  maxSeq: 9007199254740991,
 };
 
 function Remote(options) {
