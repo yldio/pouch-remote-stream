@@ -1,6 +1,6 @@
 'use strict';
 
-var debug = require('debug')('pouchdb-remote-stream:stream');
+var debug = require('debug')('pouch-remote-stream:stream');
 var stream = require('stream');
 var duplexify = require('duplexify');
 
@@ -22,7 +22,7 @@ module.exports = function Stream(callbacks, opts) {
       var event = data[1];
       var eventData = data[2];
       var eventName = event;
-      if (eventName == 'error') {
+      if (eventName === 'error') {
         debug('we have an error event here');
         eventName = '_error';
       }

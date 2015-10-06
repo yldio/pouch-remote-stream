@@ -3,7 +3,7 @@
 var once = require('once');
 var timers = require('timers');
 var methods = require('./methods');
-var debug = require('debug')('pouchdb-remote-stream:adapter');
+var debug = require('debug')('pouch-remote-stream:adapter');
 var EventEmitter = require('events').EventEmitter;
 var promisify = require('./lib/promisify');
 

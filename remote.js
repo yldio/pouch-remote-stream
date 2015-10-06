@@ -1,6 +1,6 @@
 'use strict';
 
-var debug = require('debug')('pouchdb-remote-stream:remote');
+var debug = require('debug')('pouch-remote-stream:remote');
 var extend = require('xtend');
 var Stream = require('./stream');
 
@@ -37,7 +37,7 @@ function Remote(options) {
       debug('event', event, data);
       var listener = remote._listeners[data[0]];
       var eventName = event;
-      if (eventName == '_error') {
+      if (eventName === '_error') {
         eventName = 'error';
       }
       if (listener) {

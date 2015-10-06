@@ -1,3 +1,7 @@
+'use strict';
+
+/* eslint func-names: 0 */
+
 var Lab = require('lab');
 var lab = exports.lab = Lab.script();
 var describe = lab.experiment;
@@ -8,10 +12,9 @@ var expect = Code.expect;
 var Remote = require('../');
 var PouchDB = require('pouchdb');
 
-var seq = -1;
+var _seq = -1;
 
 describe('Adapter', function() {
-
   var remote;
   var remoteDB;
 
@@ -23,7 +26,7 @@ describe('Adapter', function() {
   it('remote db cannot be created without remotes', function(done) {
     remote = Remote({});
     remoteDB = new PouchDB('dbname', {
-      adapter: 'remote'
+      adapter: 'remote',
     });
     remoteDB.get('a', function(err) {
       expect(err).to.be.an.object();
@@ -36,7 +39,7 @@ describe('Adapter', function() {
     remote = Remote({});
     remoteDB = new PouchDB('dbname', {
       adapter: 'remote',
-      remote: remote
+      remote: remote,
     });
     done();
   });
@@ -51,8 +54,7 @@ describe('Adapter', function() {
     remoteDB.destroy(function(err, result) {
       if (err) {
         done(err);
-      }
-      else {
+      } else {
         expect(result).to.deep.equal({ok: true});
         done();
       }
@@ -64,15 +66,14 @@ describe('Adapter', function() {
     var stream = remote.stream();
 
     stream.once('data', function(d) {
-      expect(d).to.deep.equal([seq,"dbname","_bulkDocs",[{"docs":[{"_id":"id","a":1,"b":2}]},{"new_edits":true}]]);
+      expect(d).to.deep.equal([seq, 'dbname', '_bulkDocs', [{'docs': [{'_id': 'id', 'a': 1, 'b': 2}]}, {'new_edits': true}]]);
       stream.write([seq, [null, {ok: true, id: 'id', rev: 1}]]);
     });
 
-    remoteDB.put({_id: 'id', a:1,b:2}, function(err, result) {
+    remoteDB.put({_id: 'id', a: 1, b: 2}, function(err, result) {
       if (err) {
         done(err);
-      }
-      else {
+      } else {
         expect(result).to.deep.equal({ok: true, id: 'id', rev: 1});
         done();
       }
@@ -90,8 +91,7 @@ describe('Adapter', function() {
     remoteDB.get('alice', function(err, result) {
       if (err) {
         done(err);
-      }
-      else {
+      } else {
         expect(result).to.deep.equal({ok: true});
         done();
       }
@@ -102,14 +102,13 @@ describe('Adapter', function() {
     var seq = sequence();
     var stream = remote.stream();
     stream.once('data', function(d) {
-      expect(d).to.deep.equal([seq, 'dbname', '_bulkDocs', [{"docs":[{"_id":"id","a":2,"b":3}]},{"new_edits":true}]]);
+      expect(d).to.deep.equal([seq, 'dbname', '_bulkDocs', [{'docs': [{'_id': 'id', 'a': 2, 'b': 3}]}, {'new_edits': true}]]);
       stream.write([seq, [null, {ok: true, id: 'id', rev: 1}]]);
     });
-    remoteDB.post({"_id":"id","a":2,"b":3}, function(err, result) {
+    remoteDB.post({'_id': 'id', 'a': 2, 'b': 3}, function(err, result) {
       if (err) {
         done(err);
-      }
-      else {
+      } else {
         expect(result).to.deep.equal({ok: true, id: 'id', rev: 1});
         done();
       }
@@ -120,24 +119,29 @@ describe('Adapter', function() {
     var seq = sequence();
     var stream = remote.stream();
     stream.once('data', function(d) {
-      expect(d).to.deep.equal([seq, 'dbname', '_bulkDocs', [{docs: [
-        {
-          _id: 'id',
-          _rev: 'rev',
-          _deleted: true,
-        }]},
-        {
-          was_delete: true,
-          new_edits: true,
-        }
-        ]]);
+      expect(d).to.deep.equal([
+        seq, 'dbname', '_bulkDocs', [
+          {
+            docs: [
+              {
+                _id: 'id',
+                _rev: 'rev',
+                _deleted: true,
+              },
+            ],
+          },
+          {
+            was_delete: true,
+            new_edits: true,
+          },
+        ],
+      ]);
       stream.write([seq, [null, {ok: true, id: 'id', rev: 2}]]);
     });
     remoteDB.remove('id', 'rev', function(err, result) {
       if (err) {
         done(err);
-      }
-      else {
+      } else {
         expect(result).to.deep.equal({ok: true, id: 'id', rev: 2});
         done();
       }
@@ -146,28 +150,30 @@ describe('Adapter', function() {
 
   it('can be used to get all docs', function(done) {
     var resp = {
-        "offset": 0,
-        "total_rows": 1,
-        "rows": [{
-          "doc": {
-            "_id": "0B3358C1-BA4B-4186-8795-9024203EB7DD",
-            "_rev": "1-5782E71F1E4BF698FA3793D9D5A96393",
-            "title": "Sound and Vision",
-            "_attachments": {
-              "attachment/its-id": {
-                "content_type": "image/jpg",
-                "data": "R0lGODlhAQABAIAAAP7//wAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==",
-                "digest": "md5-57e396baedfe1a034590339082b9abce"
-              }
-            }
+      'offset': 0,
+      'total_rows': 1,
+      'rows': [
+        {
+          'doc': {
+            '_id': '0B3358C1-BA4B-4186-8795-9024203EB7DD',
+            '_rev': '1-5782E71F1E4BF698FA3793D9D5A96393',
+            'title': 'Sound and Vision',
+            '_attachments': {
+              'attachment/its-id': {
+                'content_type': 'image/jpg',
+                'data': 'R0lGODlhAQABAIAAAP7//wAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==',
+                'digest': 'md5-57e396baedfe1a034590339082b9abce',
+              },
+            },
           },
-         "id": "0B3358C1-BA4B-4186-8795-9024203EB7DD",
-         "key": "0B3358C1-BA4B-4186-8795-9024203EB7DD",
-         "value": {
-          "rev": "1-5782E71F1E4BF698FA3793D9D5A96393"
-         }
-       }]
-      };
+          'id': '0B3358C1-BA4B-4186-8795-9024203EB7DD',
+          'key': '0B3358C1-BA4B-4186-8795-9024203EB7DD',
+          'value': {
+            'rev': '1-5782E71F1E4BF698FA3793D9D5A96393',
+          },
+        },
+      ],
+    };
 
     var seq = sequence();
     var stream = remote.stream();
@@ -179,8 +185,7 @@ describe('Adapter', function() {
     remoteDB.allDocs(function(err, results) {
       if (err) {
         done(err);
-      }
-      else {
+      } else {
         expect(results).to.deep.equal(resp);
         done();
       }
@@ -190,33 +195,33 @@ describe('Adapter', function() {
   it('can listen to changes', function(done) {
     var changes = [
       {
-        "id": "doc1",
-        "changes": [ { "rev": "1-9152679630cc461b9477792d93b83eae" } ],
-        "doc": {
-          "_id": "doc1",
-          "_rev": "1-9152679630cc461b9477792d93b83eae"
+        'id': 'doc1',
+        'changes': [ { 'rev': '1-9152679630cc461b9477792d93b83eae' } ],
+        'doc': {
+          '_id': 'doc1',
+          '_rev': '1-9152679630cc461b9477792d93b83eae',
         },
-        "seq": 1
+        'seq': 1,
       },
       {
-        "id": "doc2",
-        "changes": [ { "rev": "2-9b50a4b63008378e8d0718a9ad05c7af" } ],
-        "doc": {
-          "_id": "doc2",
-          "_rev": "2-9b50a4b63008378e8d0718a9ad05c7af",
-          "_deleted": true
+        'id': 'doc2',
+        'changes': [ { 'rev': '2-9b50a4b63008378e8d0718a9ad05c7af' } ],
+        'doc': {
+          '_id': 'doc2',
+          '_rev': '2-9b50a4b63008378e8d0718a9ad05c7af',
+          '_deleted': true,
         },
-        "deleted": true,
-        "seq": 3
+        'deleted': true,
+        'seq': 3,
       },
     ];
     var curSeq = -1;
 
     var seq = sequence();
     var stream = remote.stream();
-    stream.once('data', function(d) {
-      d = JSON.parse(JSON.stringify(d));
-      expect(d).to.deep.equal([seq,"dbname","_changes",[0,{"since":0,"descending":false}]]);
+    stream.once('data', function(_d) {
+      var d = JSON.parse(JSON.stringify(_d));
+      expect(d).to.deep.equal([seq, 'dbname', '_changes', [0, {'since': 0, 'descending': false}]]);
       stream.write([seq, [null, {ok: true}]]);
 
       changes.forEach(function(change) {
@@ -258,33 +263,33 @@ describe('Adapter', function() {
   it('can listen to changes live', function(done) {
     var changes = [
       {
-        "id": "doc1",
-        "changes": [ { "rev": "1-9152679630cc461b9477792d93b83eae" } ],
-        "doc": {
-          "_id": "doc1",
-          "_rev": "1-9152679630cc461b9477792d93b83eae"
+        'id': 'doc1',
+        'changes': [ { 'rev': '1-9152679630cc461b9477792d93b83eae' } ],
+        'doc': {
+          '_id': 'doc1',
+          '_rev': '1-9152679630cc461b9477792d93b83eae',
         },
-        "seq": 1
+        'seq': 1,
       },
       {
-        "id": "doc2",
-        "changes": [ { "rev": "2-9b50a4b63008378e8d0718a9ad05c7af" } ],
-        "doc": {
-          "_id": "doc2",
-          "_rev": "2-9b50a4b63008378e8d0718a9ad05c7af",
-          "_deleted": true
+        'id': 'doc2',
+        'changes': [ { 'rev': '2-9b50a4b63008378e8d0718a9ad05c7af' } ],
+        'doc': {
+          '_id': 'doc2',
+          '_rev': '2-9b50a4b63008378e8d0718a9ad05c7af',
+          '_deleted': true,
         },
-        "deleted": true,
-        "seq": 3
+        'deleted': true,
+        'seq': 3,
       },
     ];
     var curSeq = -1;
 
     var seq = sequence();
     var stream = remote.stream();
-    stream.once('data', function(d) {
-      d = JSON.parse(JSON.stringify(d));
-      expect(d).to.deep.equal([seq,"dbname","_changes",[2,{"live":true,"continuous":true,"since":0,"descending":false}]]);
+    stream.once('data', function(_d) {
+      var d = JSON.parse(JSON.stringify(_d));
+      expect(d).to.deep.equal([seq, 'dbname', '_changes', [2, {'live': true, 'continuous': true, 'since': 0, 'descending': false}]]);
       stream.write([seq, [null, {ok: true}]]);
 
       changes.forEach(function(change) {
@@ -297,18 +302,14 @@ describe('Adapter', function() {
     feed.on('change', function(change) {
       curSeq ++;
       expect(change).to.deep.equal(changes[curSeq]);
-      if (curSeq == changes.length - 1) {
+      if (curSeq === changes.length - 1) {
         done();
       }
     });
   });
-
-
 });
 
 
-function xit() {}
-
 function sequence() {
-  return ++seq;
+  return ++_seq;
 }

@@ -1,3 +1,7 @@
+'use strict';
+
+/* eslint func-names: 0 */
+
 var Lab = require('lab');
 var lab = exports.lab = Lab.script();
 var describe = lab.experiment;
@@ -10,25 +14,24 @@ var async = require('async');
 var EventEmitter = require('events');
 
 describe('max sequence', function() {
-
   PouchDB.adapter('remote', Remote.adapter);
   var remote = Remote({maxSeq: 3});
   var remoteDB = new PouchDB('dbname', {
     adapter: 'remote',
-    remote: remote
+    remote: remote,
   });
 
 
   it('sequence will roll', function(done) {
-    var stream = remote.stream()
+    var stream = remote.stream();
     var expectedSeq = -1;
     var keys = ['a', 'b', 'c', 'd', 'e'];
     var count = 0;
     stream.on('data', function(d) {
-      expectedSeq = (expectedSeq +1) % 4;
+      expectedSeq = (expectedSeq + 1) % 4;
       var seq = d[0];
       expect(seq).to.equal(expectedSeq);
-      if (++ count == keys.length) {
+      if (++ count === keys.length) {
         done();
       }
     });
@@ -41,8 +44,9 @@ describe('max sequence', function() {
 
   it('listener sequence will roll', function(done) {
     var id;
+    var i;
     var listener = new EventEmitter();
-    for(var i = 0 ; i < 5 ; i ++) {
+    for (i = 0; i < 5; i ++) {
       id = remote.addListener(listener);
       expect(id).to.equal(i % 4);
     }
@@ -52,8 +56,8 @@ describe('max sequence', function() {
         done();
       }
     });
-    var stream = remote.stream()
-    for(var i = 0 ; i < 5 ; i ++) {
+    var stream = remote.stream();
+    for (i = 0; i < 5; i ++) {
       stream.write(['_event', 'change', [i % 4, 'yay']]);
     }
   });
