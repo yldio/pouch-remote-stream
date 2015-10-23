@@ -13,8 +13,7 @@ describe('listeners', function() {
   var remote = Remote();
 
   it('event with no listeners gets ignored', function(done) {
-    var stream = remote.stream();
-    stream.write(['_event', 'change', []]);
+    remote.stream.write(['_event', 'change', []]);
     setTimeout(done, 100);
   });
 });

@@ -23,11 +23,10 @@ describe('max sequence', function() {
 
 
   it('sequence will roll', function(done) {
-    var stream = remote.stream();
     var expectedSeq = -1;
     var keys = ['a', 'b', 'c', 'd', 'e'];
     var count = 0;
-    stream.on('data', function(d) {
+    remote.stream.on('data', function(d) {
       expectedSeq = (expectedSeq + 1) % 4;
       var seq = d[0];
       expect(seq).to.equal(expectedSeq);
@@ -56,9 +55,8 @@ describe('max sequence', function() {
         done();
       }
     });
-    var stream = remote.stream();
     for (i = 0; i < 5; i ++) {
-      stream.write(['_event', 'change', [i % 4, 'yay']]);
+      remote.stream.write(['_event', 'change', [i % 4, 'yay']]);
     }
   });
 });

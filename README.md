@@ -1,6 +1,8 @@
 # pouch-remote-stream
 
-Remote PouchDB stream
+Remote PouchDB stream.
+
+
 
 ## Use with reconnect:
 

@@ -30,10 +30,10 @@ function Remote(options) {
 
   this._options = extend({}, defaults, options);
   this._options.stream = extend(this._options.stream, defaults.stream, options && options.stream);
-  this._stream = Stream(this._callbacks, this._options.stream);
+  this.stream = Stream(this._callbacks, this._options.stream);
 
   CHANGE_EVENTS.forEach(function eachEvent(event) {
-    remote._stream.on(event, function onEvent(data) {
+    remote.stream.on(event, function onEvent(data) {
       debug('event', event, data);
       var listener = remote._listeners[data[0]];
       var eventName = event;
@@ -52,17 +52,13 @@ function Remote(options) {
   });
 }
 
-Remote.prototype.stream = function stream() {
-  return this._stream;
-};
-
 Remote.prototype.invoke = function invoke(db, method, args, cb) {
   debug('invoke, db=%s, method=%s, args=%j, cb=', db, method, args, cb);
   var seq = this._sequence();
   if (cb) {
     this._callbacks[seq] = cb;
   }
-  this._stream._readable.write([seq, db, method, args]);
+  this.stream._readable.write([seq, db, method, args]);
 };
 
 Remote.prototype.addListener = function addListener(listener) {

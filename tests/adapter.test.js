@@ -46,10 +46,9 @@ describe('Adapter', function() {
 
   it('can be used to destroy a db', function(done) {
     var seq = sequence();
-    var stream = remote.stream();
-    stream.once('data', function(d) {
+    remote.stream.once('data', function(d) {
       expect(d).to.deep.equal([seq, 'dbname', 'destroy', []]);
-      stream.write([seq, [null, {ok: true}]]);
+      remote.stream.write([seq, [null, {ok: true}]]);
     });
     remoteDB.destroy(function(err, result) {
       if (err) {
@@ -63,11 +62,9 @@ describe('Adapter', function() {
 
   it('can be used to put a doc', function(done) {
     var seq = sequence();
-    var stream = remote.stream();
-
-    stream.once('data', function(d) {
+    remote.stream.once('data', function(d) {
       expect(d).to.deep.equal([seq, 'dbname', '_bulkDocs', [{'docs': [{'_id': 'id', 'a': 1, 'b': 2}]}, {'new_edits': true}]]);
-      stream.write([seq, [null, {ok: true, id: 'id', rev: 1}]]);
+      remote.stream.write([seq, [null, {ok: true, id: 'id', rev: 1}]]);
     });
 
     remoteDB.put({_id: 'id', a: 1, b: 2}, function(err, result) {
@@ -83,10 +80,9 @@ describe('Adapter', function() {
 
   it('can be used to get a doc', function(done) {
     var seq = sequence();
-    var stream = remote.stream();
-    stream.once('data', function(d) {
+    remote.stream.once('data', function(d) {
       expect(d).to.deep.equal([seq, 'dbname', 'get', ['alice']]);
-      stream.write([seq, [null, {ok: true}]]);
+      remote.stream.write([seq, [null, {ok: true}]]);
     });
     remoteDB.get('alice', function(err, result) {
       if (err) {
@@ -100,10 +96,9 @@ describe('Adapter', function() {
 
   it('can be used to post a doc', function(done) {
     var seq = sequence();
-    var stream = remote.stream();
-    stream.once('data', function(d) {
+    remote.stream.once('data', function(d) {
       expect(d).to.deep.equal([seq, 'dbname', '_bulkDocs', [{'docs': [{'_id': 'id', 'a': 2, 'b': 3}]}, {'new_edits': true}]]);
-      stream.write([seq, [null, {ok: true, id: 'id', rev: 1}]]);
+      remote.stream.write([seq, [null, {ok: true, id: 'id', rev: 1}]]);
     });
     remoteDB.post({'_id': 'id', 'a': 2, 'b': 3}, function(err, result) {
       if (err) {
@@ -117,8 +112,7 @@ describe('Adapter', function() {
 
   it('can be used to remove a doc', function(done) {
     var seq = sequence();
-    var stream = remote.stream();
-    stream.once('data', function(d) {
+    remote.stream.once('data', function(d) {
       expect(d).to.deep.equal([
         seq, 'dbname', '_bulkDocs', [
           {
@@ -136,7 +130,7 @@ describe('Adapter', function() {
           },
         ],
       ]);
-      stream.write([seq, [null, {ok: true, id: 'id', rev: 2}]]);
+      remote.stream.write([seq, [null, {ok: true, id: 'id', rev: 2}]]);
     });
     remoteDB.remove('id', 'rev', function(err, result) {
       if (err) {
@@ -176,10 +170,9 @@ describe('Adapter', function() {
     };
 
     var seq = sequence();
-    var stream = remote.stream();
-    stream.once('data', function(d) {
+    remote.stream.once('data', function(d) {
       expect(d).to.deep.equal([seq, 'dbname', 'allDocs', []]);
-      stream.write([seq, [null, resp]]);
+      remote.stream.write([seq, [null, resp]]);
     });
 
     remoteDB.allDocs(function(err, results) {
@@ -218,16 +211,15 @@ describe('Adapter', function() {
     var curSeq = -1;
 
     var seq = sequence();
-    var stream = remote.stream();
-    stream.once('data', function(_d) {
+    remote.stream.once('data', function(_d) {
       var d = JSON.parse(JSON.stringify(_d));
       expect(d).to.deep.equal([seq, 'dbname', '_changes', [0, {'since': 0, 'descending': false}]]);
-      stream.write([seq, [null, {ok: true}]]);
+      remote.stream.write([seq, [null, {ok: true}]]);
 
       changes.forEach(function(change) {
-        stream.write(['_event', 'change', [0, change]]);
+        remote.stream.write(['_event', 'change', [0, change]]);
       });
-      stream.write(['_event', 'complete', [0]]);
+      remote.stream.write(['_event', 'complete', [0]]);
     });
 
     var feed = remoteDB.changes();
@@ -245,7 +237,6 @@ describe('Adapter', function() {
   });
 
   it('can listen to a changes feed that errors', function(done) {
-    var stream = remote.stream();
     var feed = remoteDB.changes();
     sequence();
 
@@ -256,7 +247,7 @@ describe('Adapter', function() {
     });
 
     setTimeout(function() {
-      stream.write(['_event', 'error', [1, {message: 'ouch'}]]);
+      remote.stream.write(['_event', 'error', [1, {message: 'ouch'}]]);
     }, 100);
   });
 
@@ -286,14 +277,13 @@ describe('Adapter', function() {
     var curSeq = -1;
 
     var seq = sequence();
-    var stream = remote.stream();
-    stream.once('data', function(_d) {
+    remote.stream.once('data', function(_d) {
       var d = JSON.parse(JSON.stringify(_d));
       expect(d).to.deep.equal([seq, 'dbname', '_changes', [2, {'live': true, 'continuous': true, 'since': 0, 'descending': false}]]);
-      stream.write([seq, [null, {ok: true}]]);
+      remote.stream.write([seq, [null, {ok: true}]]);
 
       changes.forEach(function(change) {
-        stream.write(['_event', 'change', [2, change]]);
+        remote.stream.write(['_event', 'change', [2, change]]);
       });
     });
 
