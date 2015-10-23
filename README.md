@@ -14,25 +14,25 @@ $ npm install pouch-remote-stream --save
 
 ## Getting started
 
-Require it:
+### 1. Require it
 
 ```js
 var Remote = require('pouch-remote-stream');
 ```
 
-Add the PouchDB adapter:
+### 2. Add the PouchDB adapter
 
 ```
 PouchDB.adapter('remote', Remote.adapter);
 ```
 
-Create the remote:
+### 3. Create the remote
 
 ```js
 var remote = Remote();
 ```
 
-Create the remote PouchDB database:
+### 4. Create the remote PouchDB database
 
 ```js
 var remoteDB = new PouchDB('mydb', {
@@ -41,7 +41,7 @@ var remoteDB = new PouchDB('mydb', {
 });
 ```
 
-Pipe it to and from a duplex stream:
+### 5. Pipe it to and from a duplex stream
 
 ```js
 var stream = somehowCreateSomeDuplexStream();
@@ -49,7 +49,9 @@ var stream = somehowCreateSomeDuplexStream();
 stream.pipe(remote.stream).pipe(stream);
 ```
 
-Use the PouchDB remote DB, for example to sync a local DB:
+### 6. Use the PouchDB remote DB
+
+, for example to sync a local DB:
 
 ```js
 var localDB = new PouchDB('someLocalDB');
@@ -57,9 +59,34 @@ localDB.sync(remoteDB);
 ```
 
 
-## Use with reconnect:
+## Any stream, really
 
-Here's an example of using it through a TCP stream:
+You can pipe it to and from any duplex object stream.
+
+
+## Encode and decode streams
+
+If you need to work with a raw duplex stream (like a TCP or a web socket), you will need to encode and decode the stream. For example, you can use a new-line separated JSON duplex stream like this:
+
+```js
+var JSONDuplexStream = require('json-duplex-stream');
+
+var JSONStream = JSONDuplexStream();
+
+var rawDuplexStream = createRawStreamSomehow();
+
+// raw => JSON.in => remote.stream => JSON.out => raw
+
+rawDuplexStream.
+  pipe(JSONStream.in).
+  pipe(remote.stream).
+  pipe(JSONStream.out).
+  pipe(rawDuplexStream);
+```
+
+## You can use with reconnect:
+
+Here's an example of using a TCP stream and reconnecting if the connection goes down:
 
 ```js
 var Remote = require('pouch-remote-stream');
