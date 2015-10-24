@@ -1,5 +1,8 @@
 # pouch-remote-stream
 
+[![By](https://img.shields.io/badge/made%20by-yld!-32bbee.svg?style=flat)](http://yld.io/contact?source=github-nock)
+[![Build Status](https://secure.travis-ci.org/pgte/pouch-remote-stream.svg)](http://travis-ci.org/pgte/pouch-remote-stream)
+
 Consume a remote [PouchDB](http://pouchdb.com/) stream.
 
 Goes well with [`pouch-stream-server`](https://github.com/pgte/pouch-stream-server) on the server side.
