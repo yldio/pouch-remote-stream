@@ -21,8 +21,10 @@
   "homepage": "https://github.com/pgte/pouch-remote-stream#readme",
   "devDependencies": {
     "async": "^1.4.2",
+    "code": "^1.5.0",
     "eslint": "^1.6.0",
     "istanbul": "^0.3.21",
+    "lab": "^6.2.0",
     "pouch-stream-server": "0.1.0",
     "pouch-stream-tests": "0.1.1",
     "pre-commit": "^1.1.1"
