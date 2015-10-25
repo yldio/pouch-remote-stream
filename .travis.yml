@@ -4,5 +4,5 @@ node_js:
   - "0.11"
   - "0.12"
   - 4
-script: "npm test"
+script: "npm run test:nocov"
 sudo: false
