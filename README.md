@@ -8,6 +8,10 @@ Consume a remote [PouchDB](http://pouchdb.com/) stream.
 Goes well with [`pouch-stream-server`](https://github.com/pgte/pouch-stream-server) on the server side.
 
 
+## PouchDB
+
+For now, it' only works with PouchDB v4.0. Compatibility with the new PouchDB v5 is being developed in this branch.
+
 ## Install
 
 ```
