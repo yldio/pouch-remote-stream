@@ -10,7 +10,7 @@ Goes well with [`pouch-stream-server`](https://github.com/pgte/pouch-stream-serv
 
 ## PouchDB
 
-For now, it' only works with PouchDB v4.0. Compatibility with the new PouchDB v5 is being developed in this branch.
+For now, it' only works with PouchDB v4.0. Compatibility with the new PouchDB v5 is being developed on [this branch](https://github.com/pgte/pouch-remote-stream/tree/pouchdb-5)
 
 ## Install
 
