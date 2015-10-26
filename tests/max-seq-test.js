@@ -11,7 +11,7 @@ var expect = Code.expect;
 var Remote = require('../');
 var PouchDB = require('pouchdb');
 var async = require('async');
-var EventEmitter = require('events');
+var EventEmitter = require('events').EventEmitter;
 
 describe('max sequence', function() {
   PouchDB.adapter('remote', Remote.adapter);
