@@ -32,6 +32,12 @@ function Remote(options) {
   this._options.stream = extend(this._options.stream, defaults.stream, options && options.stream);
   this.stream = Stream(this._callbacks, this._options.stream);
 
+  this.invoke = invoke;
+  this.addListener = addListener;
+  this.removeListener = removeListener;
+  this._sequence = _sequence;
+  this._listenerSequence = _listenerSequence;
+
   CHANGE_EVENTS.forEach(function eachEvent(event) {
     remote.stream.on(event, function onEvent(data) {
       debug('event', event, data);
@@ -52,16 +58,17 @@ function Remote(options) {
   });
 }
 
-Remote.prototype.invoke = function invoke(db, method, args, cb) {
+function invoke(db, method, args, cb) {
   debug('invoke, db=%s, method=%s, args=%j, cb=', db, method, args, cb);
   var seq = this._sequence();
   if (cb) {
     this._callbacks[seq] = cb;
   }
+  console.log('this.stream.write:', this.stream.write);
   this.stream._readable.write([seq, db, method, args]);
 };
 
-Remote.prototype.addListener = function addListener(listener) {
+function addListener(listener) {
   var listenerId = this._listenerSequence();
 
   this._listeners[listenerId] = listener;
@@ -71,11 +78,11 @@ Remote.prototype.addListener = function addListener(listener) {
   return listenerId;
 };
 
-Remote.prototype.removeListener = function removeListener(id) {
+function removeListener(id) {
   delete this._listeners[id];
 };
 
-Remote.prototype._sequence = function _sequence() {
+function _sequence() {
   var n = ++ this._seq;
   if (n > this._options.maxSeq) {
     this._seq = n = 0;
@@ -83,7 +90,7 @@ Remote.prototype._sequence = function _sequence() {
   return n;
 };
 
-Remote.prototype._listenerSequence = function _sequence() {
+function _listenerSequence() {
   var n = ++ this._listenerSeq;
   if (n > this._options.maxSeq) {
     this._listenerSeq = n = 0;
