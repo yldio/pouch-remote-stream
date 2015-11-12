@@ -60,8 +60,6 @@ describe('Adapter', function() {
     });
   });
 
-  return;
-
   it('can be used to put a doc', function(done) {
     var seq = sequence();
     remote.stream.once('data', function(d) {

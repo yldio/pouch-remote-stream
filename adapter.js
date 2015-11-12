@@ -18,10 +18,13 @@ function Adapter(opts, callback) {
     return error('need a remote option');
   }
 
+  debug('going to create remote');
+  var remote;
+  remote = opts.remote.recreate();
+  debug('haz created remote');
+
   this._name = opts.originalName;
   this.skipDependentDatabase = true;
-
-  timers.setImmediate(cb, null, this);
 
   this.type = type;
 
@@ -33,6 +36,10 @@ function Adapter(opts, callback) {
 
   debug('done constructing adapter');
 
+  timers.setImmediate(function onImmediate() {
+    cb(null, adapter);
+  });
+
   function error(err) {
     cb(new Error(err));
   }
@@ -41,7 +48,7 @@ function Adapter(opts, callback) {
     return promisify(function promisified() {
       debug('calling %s, (%j)', method, arguments);
       var args = parseArgs(arguments);
-      opts.remote.invoke(opts.originalName, method, args, extractCB(args));
+      remote.invoke(opts.originalName, method, args, extractCB(args));
     });
   }
 
@@ -53,8 +60,8 @@ function Adapter(opts, callback) {
     }
 
     var listener = new EventEmitter();
-    var id = opts.remote.addListener(listener);
-    opts.remote.invoke(opts.originalName, '_changes', [id, options]);
+    var id = remote.addListener(listener);
+    remote.invoke(opts.originalName, '_changes', [id, options]);
 
     listener.cancel = cancel;
 
@@ -81,7 +88,7 @@ function Adapter(opts, callback) {
 
     function cancel() {
       debug('canceling listener %d', id);
-      opts.remote.removeListener(id);
+      remote.removeListener(id);
     }
   }
 }

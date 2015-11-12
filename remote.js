@@ -2,7 +2,7 @@
 
 var debug = require('debug')('pouch-remote-stream:remote');
 var extend = require('xtend');
-var Stream = require('./stream');
+var Streams = require('./streams');
 
 module.exports = Remote;
 
@@ -15,11 +15,16 @@ var defaults = {
   maxSeq: 9007199254740991,
 };
 
+var nextRemoteId = 0;
+var remotes = {};
+
 function Remote(options) {
   if (! (this instanceof Remote)) {
     return new Remote(options);
   }
-  debug('remote options:', options);
+
+  this._options = extend({}, defaults, options);
+  this._options.stream = extend(this._options.stream, defaults.stream, options && options.stream);
 
   var remote = this;
 
@@ -28,15 +33,8 @@ function Remote(options) {
   this._callbacks = {};
   this._listeners = {};
 
-  this._options = extend({}, defaults, options);
-  this._options.stream = extend(this._options.stream, defaults.stream, options && options.stream);
-  this.stream = Stream(this._callbacks, this._options.stream);
-
-  this.invoke = invoke;
-  this.addListener = addListener;
-  this.removeListener = removeListener;
-  this._sequence = _sequence;
-  this._listenerSequence = _listenerSequence;
+  this._streams = Streams(this._callbacks, this._options.stream);
+  this.stream = this._streams.duplex;
 
   CHANGE_EVENTS.forEach(function eachEvent(event) {
     remote.stream.on(event, function onEvent(data) {
@@ -56,19 +54,30 @@ function Remote(options) {
       }
     });
   });
+
+  this._remoteId = ++ nextRemoteId;
+  remotes[this._remoteId] = this;
+
+  this.recreate = recreate;
 }
 
-function invoke(db, method, args, cb) {
+function recreate() {
+  var remote = remotes[this._remoteId];
+  delete remotes[this._remoteId];
+  return remote;
+}
+
+Remote.prototype.invoke = function invoke(db, method, args, cb) {
   debug('invoke, db=%s, method=%s, args=%j, cb=', db, method, args, cb);
   var seq = this._sequence();
   if (cb) {
     this._callbacks[seq] = cb;
   }
-  console.log('this.stream.write:', this.stream.write);
-  this.stream._readable.write([seq, db, method, args]);
+  this._streams.readable.push([seq, db, method, args]);
 };
 
-function addListener(listener) {
+
+Remote.prototype.addListener = function addListener(listener) {
   var listenerId = this._listenerSequence();
 
   this._listeners[listenerId] = listener;
@@ -78,11 +87,11 @@ function addListener(listener) {
   return listenerId;
 };
 
-function removeListener(id) {
+Remote.prototype.removeListener = function removeListener(id) {
   delete this._listeners[id];
 };
 
-function _sequence() {
+Remote.prototype._sequence = function _sequence() {
   var n = ++ this._seq;
   if (n > this._options.maxSeq) {
     this._seq = n = 0;
@@ -90,7 +99,7 @@ function _sequence() {
   return n;
 };
 
-function _listenerSequence() {
+Remote.prototype._listenerSequence = function _listenerSequence() {
   var n = ++ this._listenerSeq;
   if (n > this._options.maxSeq) {
     this._listenerSeq = n = 0;

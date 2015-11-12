@@ -8,9 +8,9 @@ Consume a remote [PouchDB](http://pouchdb.com/) stream.
 Goes well with [`pouch-stream-server`](https://github.com/pgte/pouch-stream-server) on the server side.
 
 
-## PouchDB
+## PouchDB versions
 
-For now, it' only works with PouchDB v4.0. Compatibility with the new PouchDB v5 is being developed on [this branch](https://github.com/pgte/pouch-remote-stream/tree/pouchdb-5).
+Tested against PouchDB version 5.
 
 ## Install
 
@@ -53,7 +53,7 @@ var remoteDB = new PouchDB('mydb', {
 ```js
 var stream = somehowCreateSomeDuplexStream();
 
-stream.pipe(remote.stream).pipe(stream);
+stream.pipe(remote.stream()).pipe(stream);
 ```
 
 ### 6. Use the PouchDB remote DB
@@ -110,7 +110,6 @@ var options = {
 };
 
 var re = reconnect(options, function(stream) {
-
   var remote = Remote();
 
   var remoteDB = new PouchDB('mydb', {
@@ -118,7 +117,7 @@ var re = reconnect(options, function(stream) {
     remote: remote 
   });
 
-  stream.pipe(remote.stream()).pipe(stream);
+  stream.pipe(remote.stream).pipe(stream);
 
   // use remoteDB
 

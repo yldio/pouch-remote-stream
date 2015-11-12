@@ -5,8 +5,15 @@ var stream = require('stream');
 var duplexify = require('duplexify');
 
 module.exports = function Stream(callbacks, opts) {
-  var s = duplexify(writable(opts), readable(opts), opts);
-  return s;
+  var r = readable(opts);
+  var w = writable(opts);
+  var s = duplexify(w, r, opts);
+
+  return {
+    readable: r,
+    writable: w,
+    duplex: s,
+  };
 
   function writable(options) {
     debug('writable options:', options);
@@ -43,12 +50,15 @@ module.exports = function Stream(callbacks, opts) {
       callback();
     }
   }
-
-  function readable(options) {
-    debug('readable options:', options);
-    return new stream.PassThrough(options);
-  }
 };
+
+function readable(options) {
+  debug('readable options:', options);
+  var r = new stream.Readable(options);
+  r._read = noop;
+  return r;
+}
+
 
 function errorForPayload(payload) {
   var err = payload && payload[0];
@@ -59,3 +69,5 @@ function errorForPayload(payload) {
     error.name = err.name;
   }
 }
+
+function noop() {}
