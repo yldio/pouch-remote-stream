@@ -28,6 +28,8 @@ function Adapter(opts, callback) {
 
   this.type = type;
 
+  this._info = info;
+
   methods.forEach(function eachMethod(method) {
     adapter[method] = wrap(method);
   });
@@ -90,6 +92,18 @@ function Adapter(opts, callback) {
       debug('canceling listener %d', id);
       remote.removeListener(id);
     }
+  }
+
+  function info(infocb) {
+    remote.invoke(opts.originalName, '_info', [], function onInvokeResponse(err, response) {
+      /* istanbul ignore if */
+      if (err) {
+        infocb(err);
+      } else {
+        response.backend_adapter = 'remote';
+        infocb(null, response);
+      }
+    });
   }
 }
 

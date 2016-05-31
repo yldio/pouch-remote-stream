@@ -277,13 +277,22 @@ describe('Adapter', function() {
     var curSeq = -1;
 
     var seq = sequence();
+
     remote.stream.once('data', function(_d) {
       var d = JSON.parse(JSON.stringify(_d));
-      expect(d).to.deep.equal([seq, 'dbname', '_changes', [2, {'live': true, 'continuous': true, 'since': 0, 'descending': false}]]);
-      remote.stream.write([seq, [null, {ok: true}]]);
+      expect(d).to.deep.equal([seq, 'dbname', '_info', []]);
+      remote.stream.write([seq, [null, { doc_count: 0, update_seq: 0, backend_adapter: 'LevelDOWN' }]]);
 
-      changes.forEach(function(change) {
-        remote.stream.write(['_event', 'change', [2, change]]);
+      seq = sequence();
+
+      remote.stream.once('data', function(_d2) {
+        var d2 = JSON.parse(JSON.stringify(_d2));
+        expect(d2).to.deep.equal([seq, 'dbname', '_changes', [2, {'live': true, 'continuous': true, 'since': 0, 'descending': false}]]);
+        remote.stream.write([seq, [null, {ok: true}]]);
+
+        changes.forEach(function(change) {
+          remote.stream.write(['_event', 'change', [2, change]]);
+        });
       });
     });
 
